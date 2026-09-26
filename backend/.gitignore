@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Production build
+dist/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Service account credentials & secrets
+service-account*.json
+*.pem
+*.key
+
+# Data store & generated bills
+data/store.json
+data/store.json.tmp
+data/*.csv
+bills/
+
+# Logs
+*.log
