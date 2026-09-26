@@ -375,7 +375,7 @@ export const OnlineBillsSheetView: React.FC<OnlineBillsSheetViewProps> = ({
                     title="Click to view or edit customer repair order & job card"
                   >
                     <td className="py-2.5 px-3 font-mono text-slate-500 font-bold">{row.rowNumber}</td>
-                    <td className="py-2.5 px-3 font-mono font-bold text-blue-400 bg-blue-950/20 underline decoration-blue-500/40">{row.orderId}</td>
+                    <td className="py-2.5 px-3 font-mono font-bold text-blue-400 bg-blue-950/20 underline decoration-blue-500/40 text-xs lowercase">{row.orderId}</td>
                     <td className="py-2.5 px-3 font-bold text-white group-hover:text-blue-300">{row.customerName}</td>
                     <td className="py-2.5 px-3 font-mono text-slate-300">
                       <div className="flex items-center gap-1.5">

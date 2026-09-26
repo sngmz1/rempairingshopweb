@@ -185,7 +185,7 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
         {/* Top Header Bar */}
         <div className="flex items-center justify-between pb-3 border-b border-slate-800">
           <div className="flex items-center gap-2.5">
-            <span className="font-mono text-sm sm:text-base font-extrabold text-blue-400 bg-blue-950/80 px-2.5 py-1 rounded-xl border border-blue-900">
+            <span className="font-mono text-xs sm:text-sm font-extrabold text-blue-400 bg-blue-950/80 px-2.5 py-1 rounded-xl border border-blue-900 lowercase break-all">
               #{order.orderId}
             </span>
             <span
@@ -245,22 +245,22 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
             <div className="flex items-center gap-1.5">
               <a
                 href={`tel:${order.customerMobile}`}
-                className="px-2.5 py-1.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 text-xs font-semibold flex items-center gap-1 transition"
+                className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 text-xs font-semibold flex items-center gap-1 transition shadow-sm"
                 title="Call Customer"
               >
                 <Phone className="w-3.5 h-3.5" />
-                <span>Call</span>
+                <span className="hidden sm:inline">Call</span>
               </a>
 
               <a
                 href={whatsappUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1 shadow-sm transition"
+                className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1 shadow-sm transition"
                 title="Send WhatsApp Bill"
               >
                 <MessageCircle className="w-3.5 h-3.5" />
-                <span>WhatsApp</span>
+                <span className="hidden sm:inline">WhatsApp</span>
               </a>
             </div>
           </div>

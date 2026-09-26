@@ -132,8 +132,8 @@ export const PrintJobCardModal: React.FC<PrintJobCardModalProps> = ({
             <span className="uppercase text-[11px] text-slate-700">
               {order.status === 'Delivered' ? 'Repair Receipt' : 'Repair Job Bill'}
             </span>
-            <span className="font-mono text-blue-700 font-extrabold text-xs sm:text-sm">
-              ORDER #{order.orderId}
+            <span className="font-mono text-blue-700 font-extrabold text-xs sm:text-sm lowercase">
+              #{order.orderId}
             </span>
           </div>
 

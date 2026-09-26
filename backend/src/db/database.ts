@@ -208,7 +208,15 @@ class Database {
   }
 
   public getOrderById(orderId: string): RepairOrder | undefined {
-    return this.state.orders.find((o) => o.orderId === orderId);
+    const cleanId = orderId.trim().toLowerCase();
+    return this.state.orders.find((o) => {
+      const oId = o.orderId.toLowerCase();
+      return (
+        oId === cleanId ||
+        (cleanId.length >= 2 && oId.replace(/\D/g, '') === cleanId.replace(/\D/g, '')) ||
+        oId.endsWith(`-${cleanId}`)
+      );
+    });
   }
 
   public saveOrder(order: RepairOrder): RepairOrder {
@@ -223,11 +231,9 @@ class Database {
   }
 
   public getNextOrderId(): string {
-    const year = new Date().getFullYear();
-    this.state.lastOrderSequence += 1;
-    const formattedSeq = String(this.state.lastOrderSequence).padStart(5, '0');
+    this.state.lastOrderSequence = (this.state.lastOrderSequence || 0) + 1;
     this.saveData(this.state);
-    return `ORD-${year}-${formattedSeq}`;
+    return `jay-mataji-talod-${this.state.lastOrderSequence}`;
   }
 
   public getParts(): StockItem[] {

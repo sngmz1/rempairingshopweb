@@ -14,6 +14,7 @@ import {
   Phone,
   MessageCircle,
   FileText,
+  ChevronRight,
 } from 'lucide-react';
 import { DashboardStats, RepairOrder } from '../../types';
 
@@ -232,7 +233,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   <div>
                     {/* Header: ID + Status */}
                     <div className="flex items-center justify-between gap-2 mb-2">
-                      <span className="font-mono text-xs font-bold text-blue-400 bg-blue-950/40 px-2.5 py-1 rounded-lg border border-blue-900/60">
+                      <span className="font-mono text-[11px] font-bold text-blue-400 bg-blue-950/40 px-2 py-0.5 rounded-lg border border-blue-900/60 lowercase tracking-tight">
                         {order.orderId}
                       </span>
                       <span
@@ -248,11 +249,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         <h3 className="text-base font-bold text-white group-hover:text-blue-300 transition-colors">
                           {order.customerName}
                         </h3>
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1.5">
                           <a
                             href={`tel:${order.customerMobile}`}
                             onClick={(e) => e.stopPropagation()}
-                            className="p-1 rounded-lg hover:bg-slate-700 text-slate-400 hover:text-emerald-400 transition"
+                            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-emerald-400 border border-slate-700/60 transition shadow-sm"
                             title="Call Customer"
                           >
                             <Phone className="w-3.5 h-3.5" />
@@ -262,7 +263,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                             target="_blank"
                             rel="noreferrer"
                             onClick={(e) => e.stopPropagation()}
-                            className="p-1 rounded-lg hover:bg-slate-700 text-slate-400 hover:text-emerald-400 transition"
+                            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-emerald-400 border border-slate-700/60 transition shadow-sm"
                             title="WhatsApp Customer"
                           >
                             <MessageCircle className="w-3.5 h-3.5" />
@@ -305,15 +306,23 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                             onSelectOrder(order);
                           }
                         }}
-                        className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 border border-blue-500/30 text-[11px] font-semibold transition active:scale-95"
+                        className="p-1.5 rounded-lg bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 border border-blue-500/30 text-xs font-semibold flex items-center gap-1 transition active:scale-95 shadow-sm"
                         title="View Bill"
                       >
-                        <FileText className="w-3 h-3" />
-                        <span>View Bill</span>
+                        <FileText className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">Bill</span>
                       </button>
-                      <span className="text-slate-400 group-hover:text-blue-400 group-hover:translate-x-0.5 transition-all font-semibold text-[11px]">
-                        Open →
-                      </span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSelectOrder(order);
+                        }}
+                        className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 transition"
+                        title="Order Details"
+                      >
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   </div>
                 </div>

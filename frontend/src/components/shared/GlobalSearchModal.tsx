@@ -107,7 +107,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
                   >
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-mono font-bold text-blue-400 bg-blue-950/60 px-2 py-0.5 rounded border border-blue-900">
+                        <span className="font-mono text-[11px] font-bold text-blue-400 bg-blue-950/60 px-2 py-0.5 rounded border border-blue-900 lowercase">
                           {order.orderId}
                         </span>
                         <span className="font-semibold text-white group-hover:text-blue-300">
