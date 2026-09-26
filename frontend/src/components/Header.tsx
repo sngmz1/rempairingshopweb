@@ -10,6 +10,7 @@ import {
   Wifi,
   WifiOff,
   FileSpreadsheet,
+  Download,
 } from 'lucide-react';
 import { ShopSettings } from '../types';
 
@@ -37,6 +38,8 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenPinModal,
 }) => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isStandalone, setIsStandalone] = useState(false);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -45,11 +48,42 @@ export const Header: React.FC<HeaderProps> = ({
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
+    // Check if running in standalone PWA window
+    const standaloneMode =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as any).standalone === true;
+    setIsStandalone(!!standaloneMode);
+
+    const handleBeforeInstall = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    const handleAppInstalled = () => {
+      setDeferredPrompt(null);
+      setIsStandalone(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+      window.removeEventListener('appinstalled', handleAppInstalled);
     };
   }, []);
+
+  const handleInstallApp = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const choice = await deferredPrompt.userChoice;
+      if (choice.outcome === 'accepted') {
+        setDeferredPrompt(null);
+      }
+    }
+  };
 
   return (
     <header className="sticky top-0 z-30 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 transition-all">
@@ -98,6 +132,18 @@ export const Header: React.FC<HeaderProps> = ({
               <Search className="w-4 h-4 text-blue-400" />
               <span className="hidden md:inline">Search</span>
             </button>
+
+            {/* Install Web App Button (PWA prompt) */}
+            {deferredPrompt && !isStandalone && (
+              <button
+                onClick={handleInstallApp}
+                className="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white border border-blue-400/50 shadow-md shadow-blue-500/20 text-[11px] sm:text-xs font-bold flex items-center gap-1 transition active:scale-95 animate-pulse"
+                title="Install Jai Mataji Repair as an App on your phone or desktop"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Install App</span>
+              </button>
+            )}
 
             {/* Google Sheets Sync Button */}
             <button
