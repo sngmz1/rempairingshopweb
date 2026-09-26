@@ -105,7 +105,7 @@ export const SuppliersView: React.FC<SuppliersViewProps> = ({ isOpen, onClose })
                   required
                   placeholder="e.g. Shree Mobile Spares"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
                   className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs"
                 />
               </div>
@@ -116,7 +116,7 @@ export const SuppliersView: React.FC<SuppliersViewProps> = ({ isOpen, onClose })
                   required
                   placeholder="e.g. 9825012345"
                   value={mobile}
-                  onChange={(e) => setMobile(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMobile(e.target.value)}
                   className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs font-mono"
                 />
               </div>
@@ -128,7 +128,7 @@ export const SuppliersView: React.FC<SuppliersViewProps> = ({ isOpen, onClose })
                 type="text"
                 placeholder="e.g. Main wholesaler for Samsung & OnePlus displays in Ahmedabad"
                 value={notes}
-                onChange={(e) => setNotes(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNotes(e.target.value)}
                 className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs"
               />
             </div>
@@ -153,7 +153,7 @@ export const SuppliersView: React.FC<SuppliersViewProps> = ({ isOpen, onClose })
           ) : suppliers.length === 0 ? (
             <div className="p-8 text-center text-slate-400 text-xs">No suppliers recorded.</div>
           ) : (
-            suppliers.map((sup) => (
+            suppliers.map((sup: Supplier) => (
               <div
                 key={sup.supplierId}
                 className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center justify-between text-xs"
