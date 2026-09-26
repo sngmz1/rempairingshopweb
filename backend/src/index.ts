@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 
 dotenv.config();
 
@@ -77,7 +78,19 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// 7. Global Error Handler
+// 7. Serve frontend static build in production (Unified 1-Service Deployment)
+const frontendDistPath = path.resolve(__dirname, '../../frontend/dist');
+if (fs.existsSync(frontendDistPath)) {
+  app.use(express.static(frontendDistPath));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api') || req.path.startsWith('/bills')) {
+      return next();
+    }
+    res.sendFile(path.join(frontendDistPath, 'index.html'));
+  });
+}
+
+// 8. Global Error Handler
 app.use(errorHandler);
 
 app.listen(PORT, () => {
