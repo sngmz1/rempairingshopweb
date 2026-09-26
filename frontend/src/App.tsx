@@ -269,6 +269,7 @@ export function App() {
                     onOpenQuickPayment={() => setIsQuickPaymentOpen(true)}
                     onSwitchToStock={() => handleSwitchSide('stock')}
                     onSelectOrder={(ord) => setSelectedOrder(ord)}
+                    onViewBill={(ord) => setOrderToPrint(ord)}
                     onFilterStatus={(st) => {
                       setSelectedStatusFilter(st);
                       setSide1Tab('orders');
@@ -305,6 +306,7 @@ export function App() {
                     selectedStatus={selectedStatusFilter}
                     onSelectStatus={setSelectedStatusFilter}
                     onSelectOrder={(ord) => setSelectedOrder(ord)}
+                    onViewBill={(ord) => setOrderToPrint(ord)}
                     searchQuery={orderSearchQuery}
                     onSearchChange={setOrderSearchQuery}
                   />

@@ -13,6 +13,7 @@ import {
   ExternalLink,
   Phone,
   MessageCircle,
+  FileText,
 } from 'lucide-react';
 import { DashboardStats, RepairOrder } from '../../types';
 
@@ -24,6 +25,7 @@ interface DashboardViewProps {
   onOpenQuickPayment: () => void;
   onSwitchToStock: () => void;
   onSelectOrder: (order: RepairOrder) => void;
+  onViewBill?: (order: RepairOrder) => void;
   onFilterStatus: (status: string) => void;
 }
 
@@ -35,6 +37,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onOpenQuickPayment,
   onSwitchToStock,
   onSelectOrder,
+  onViewBill,
   onFilterStatus,
 }) => {
   return (
@@ -280,20 +283,23 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     </div>
 
                     <div className="flex items-center gap-1.5">
-                      {order.billDriveLink && (
-                        <a
-                          href={order.billDriveLink}
-                          target="_blank"
-                          rel="noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="flex items-center gap-1 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-blue-400 text-[11px] font-medium transition"
-                          title="View Google Drive Bill"
-                        >
-                          <ExternalLink className="w-3 h-3" />
-                          <span>Bill</span>
-                        </a>
-                      )}
-                      <span className="text-blue-400 group-hover:translate-x-0.5 transition-transform font-semibold text-[11px]">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (onViewBill) {
+                            onViewBill(order);
+                          } else {
+                            onSelectOrder(order);
+                          }
+                        }}
+                        className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 border border-blue-500/30 text-[11px] font-semibold transition active:scale-95"
+                        title="View Bill"
+                      >
+                        <FileText className="w-3 h-3" />
+                        <span>View Bill</span>
+                      </button>
+                      <span className="text-slate-400 group-hover:text-blue-400 group-hover:translate-x-0.5 transition-all font-semibold text-[11px]">
                         Open →
                       </span>
                     </div>

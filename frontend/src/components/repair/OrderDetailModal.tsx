@@ -3,19 +3,17 @@ import {
   X,
   Phone,
   MessageCircle,
-  ExternalLink,
   Printer,
   CheckCircle2,
-  AlertCircle,
   Package,
   Plus,
   RotateCcw,
   IndianRupee,
-  Clock,
-  ChevronDown,
   Loader2,
+  FileText,
+  Wrench,
   Smartphone,
-  ShieldAlert,
+  Calendar,
 } from 'lucide-react';
 import { api } from '../../services/api';
 import { RepairOrder, RepairStatus, PaymentMode, StockItem } from '../../types';
@@ -39,7 +37,6 @@ const STATUS_LIST: RepairStatus[] = [
   'Ready',
   'Delivered',
   'Cancelled',
-  'Unable to Repair',
 ];
 
 export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
@@ -51,8 +48,6 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
   onOpenPrint,
 }) => {
   const [loading, setLoading] = useState(false);
-  const [statusNotes, setStatusNotes] = useState('');
-  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
 
   // Add Part state
   const [showAddPart, setShowAddPart] = useState(false);
@@ -76,9 +71,7 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
   const handleUpdateStatus = async (newStatus: RepairStatus) => {
     try {
       setLoading(true);
-      setShowStatusDropdown(false);
-      const updated = await api.updateRepairStatus(order.orderId, newStatus, 'Staff', statusNotes);
-      setStatusNotes('');
+      const updated = await api.updateRepairStatus(order.orderId, newStatus, 'Staff');
       onOrderUpdated(updated);
     } catch (err: any) {
       alert(err.message || 'Failed to update status');
@@ -87,12 +80,12 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
     }
   };
 
-  // Section 11: Mark as Delivered
+  // Mark as Delivered
   const handleMarkDelivered = () => {
     handleUpdateStatus('Delivered');
   };
 
-  // Section 16: Attach Part
+  // Attach Part
   const handleAttachPart = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedPartId) return;
@@ -109,7 +102,7 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
     }
   };
 
-  // Section 16: Confirm Part Used / Consumed (Deducts stock!)
+  // Confirm Part Used / Consumed
   const handleConfirmPartUsed = async (partId: string) => {
     try {
       setLoading(true);
@@ -122,7 +115,7 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
     }
   };
 
-  // Section 16: Return Consumed Part
+  // Return Consumed Part back to stock
   const handleReturnPart = async (partId: string) => {
     if (!confirm('Return this part back to shop inventory?')) return;
     try {
@@ -178,17 +171,25 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
     `Jai Mataji Mobile Repairing, Talod\nOrder: ${order.orderId}\nCustomer: ${order.customerName}\nDevice: ${order.brand} ${order.model}\nStatus: ${order.status}\nRemaining Balance: ₹${order.balance}\nContact: Ashok Bhai 9974298866 / Mitesh 9327394978`
   )}`;
 
+  // Calculations
+  const partsTotal = order.partsUsed
+    ? order.partsUsed.reduce((sum, p) => sum + p.unitPrice * p.quantity, 0)
+    : 0;
+  const finalTotal = order.finalAmount || order.estimatedAmount;
+  const serviceAmount = Math.max(0, finalTotal - partsTotal);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-sm overflow-y-auto">
-      <div className="glass-modal w-full max-w-2xl rounded-3xl p-5 sm:p-6 text-white shadow-2xl my-auto max-h-[94vh] overflow-y-auto border border-slate-700">
-        {/* Header Bar */}
-        <div className="flex items-center justify-between pb-4 border-b border-slate-800">
-          <div className="flex items-center gap-3">
-            <span className="font-mono text-sm sm:text-base font-extrabold text-blue-400 bg-blue-950/80 px-3 py-1 rounded-xl border border-blue-900">
-              {order.orderId}
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-sm overflow-y-auto">
+      <div className="glass-modal w-full max-w-xl rounded-3xl p-4 sm:p-6 text-white shadow-2xl my-auto max-h-[94vh] overflow-y-auto border border-slate-700 space-y-4">
+        
+        {/* Top Header Bar */}
+        <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+          <div className="flex items-center gap-2.5">
+            <span className="font-mono text-sm sm:text-base font-extrabold text-blue-400 bg-blue-950/80 px-2.5 py-1 rounded-xl border border-blue-900">
+              #{order.orderId}
             </span>
             <span
-              className={`text-xs font-bold px-3 py-1 rounded-full border ${
+              className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${
                 order.status === 'Ready'
                   ? 'bg-emerald-950 text-emerald-300 border-emerald-500/60'
                   : order.status === 'Delivered'
@@ -202,23 +203,21 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5">
-            {/* View PDF Bill button */}
-            <a
-              href={`/api/repairs/${order.orderId}/pdf`}
-              target="_blank"
-              rel="noreferrer"
-              className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-750 text-blue-400 hover:text-blue-300 border border-slate-700 flex items-center gap-1.5 text-xs font-semibold transition"
-              title="View PDF Bill / Job Card"
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
-              <span>📄 View Bill</span>
-            </a>
-
-            {/* Print button */}
+          <div className="flex items-center gap-2">
+            {/* View Bill Button (Opens Clean Printable / Shareable Bill) */}
             <button
               onClick={() => onOpenPrint(order)}
-              className="p-2 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-300 hover:text-white border border-slate-700 transition"
+              className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-blue-600/30 transition active:scale-95"
+              title="View Clean Bill"
+            >
+              <FileText className="w-3.5 h-3.5" />
+              <span>View Bill</span>
+            </button>
+
+            {/* Print Icon Button */}
+            <button
+              onClick={() => onOpenPrint(order)}
+              className="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-300 hover:text-white border border-slate-700 transition"
               title="Print Job Card"
             >
               <Printer className="w-4 h-4" />
@@ -227,25 +226,27 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
             {/* Close */}
             <button
               onClick={onClose}
-              className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition"
+              className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        {/* Customer & Device Information Card */}
-        <div className="mt-4 p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-3">
-          <div className="flex items-start justify-between">
+        {/* 1. Customer Section */}
+        <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800">
+          <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-bold text-white tracking-tight">{order.customerName}</h3>
-              <p className="text-xs font-mono text-slate-400 mt-0.5">{order.customerMobile}</p>
+              <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Customer</span>
+              <h3 className="text-base sm:text-lg font-bold text-white tracking-tight">{order.customerName}</h3>
+              <p className="text-xs font-mono text-slate-300 mt-0.5">{order.customerMobile}</p>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <a
                 href={`tel:${order.customerMobile}`}
-                className="px-3 py-1.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 text-xs font-semibold flex items-center gap-1.5 transition"
+                className="px-2.5 py-1.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 text-xs font-semibold flex items-center gap-1 transition"
+                title="Call Customer"
               >
                 <Phone className="w-3.5 h-3.5" />
                 <span>Call</span>
@@ -255,226 +256,96 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                 href={whatsappUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition"
+                className="px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1 shadow-sm transition"
+                title="Send WhatsApp Bill"
               >
                 <MessageCircle className="w-3.5 h-3.5" />
                 <span>WhatsApp</span>
               </a>
             </div>
           </div>
+        </div>
 
-          {/* Dedicated Auto Timestamps Box */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 p-3 rounded-xl bg-slate-950/70 border border-slate-800 text-xs">
-            {/* Auto Pickup Time */}
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 shrink-0">
-                <Clock className="w-4 h-4" />
-              </div>
-              <div>
-                <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
-                  Pickup / Received Time (Auto)
-                </span>
-                <span className="text-white font-mono font-semibold">
-                  {new Date(order.receivedAt).toLocaleString('en-IN', {
-                    day: '2-digit',
-                    month: 'short',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: true,
-                  })}
-                </span>
-              </div>
-            </div>
-
-            {/* Auto Delivery Time */}
-            <div className="flex items-center gap-2.5">
-              <div
-                className={`w-8 h-8 rounded-lg border flex items-center justify-center shrink-0 ${
-                  order.deliveredAt || order.status === 'Delivered'
-                    ? 'bg-emerald-600/20 border-emerald-500/30 text-emerald-400'
-                    : 'bg-amber-600/20 border-amber-500/30 text-amber-400'
-                }`}
-              >
-                <CheckCircle2 className="w-4 h-4" />
-              </div>
-              <div>
-                <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
-                  Delivery Time (Auto)
-                </span>
-                {order.deliveredAt ? (
-                  <span className="text-emerald-300 font-mono font-bold flex items-center gap-1.5 flex-wrap">
-                    <span>
-                      {new Date(order.deliveredAt).toLocaleString('en-IN', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: true,
-                      })}
-                    </span>
-                    <span className="text-[10px] bg-emerald-950 border border-emerald-500/40 text-emerald-300 px-1.5 py-0.5 rounded font-sans">
-                      Delivered ✓
-                    </span>
-                  </span>
-                ) : order.status === 'Delivered' ? (
-                  <span className="text-emerald-300 font-mono font-bold flex items-center gap-1.5 flex-wrap">
-                    <span>
-                      {new Date(order.updatedAt).toLocaleString('en-IN', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: true,
-                      })}
-                    </span>
-                    <span className="text-[10px] bg-emerald-950 border border-emerald-500/40 text-emerald-300 px-1.5 py-0.5 rounded font-sans">
-                      Delivered ✓
-                    </span>
-                  </span>
-                ) : (
-                  <span className="text-amber-300 font-mono font-medium">
-                    {order.expectedDelivery
-                      ? `Pending (Exp: ${order.expectedDelivery})`
-                      : 'Pending Handover (Auto-recorded on delivery)'}
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-2 border-t border-slate-800 text-xs">
-            <div>
-              <span className="text-slate-500">Device:</span>
-              <p className="font-semibold text-white">
+        {/* 2. Device Section */}
+        <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800">
+          <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Device</span>
+          <div className="flex items-center justify-between mt-1">
+            <div className="flex items-center gap-2">
+              <Smartphone className="w-4 h-4 text-blue-400 shrink-0" />
+              <p className="font-bold text-sm text-white">
                 {order.brand} {order.model}
               </p>
             </div>
-            {order.imeiOrSerial && (
-              <div>
-                <span className="text-slate-500">IMEI:</span>
-                <p className="font-mono text-slate-300">{order.imeiOrSerial}</p>
-              </div>
-            )}
-            {order.accessoriesReceived && (
-              <div>
-                <span className="text-slate-500">Accessories:</span>
-                <p className="text-slate-300">{order.accessoriesReceived}</p>
-              </div>
-            )}
-            {order.technician && (
-              <div>
-                <span className="text-slate-500">Technician:</span>
-                <p className="text-slate-300">{order.technician}</p>
-              </div>
-            )}
+            <span className="text-xs px-2 py-0.5 rounded-md bg-slate-800 text-slate-300">
+              {order.deviceType || 'Mobile Phone'}
+            </span>
           </div>
-
-          {/* Problem */}
-          <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 text-xs">
-            <span className="text-rose-400 font-semibold block mb-0.5">Reported Complaint:</span>
-            <span className="text-slate-200">{order.complaint}</span>
-          </div>
+          {order.imeiOrSerial && (
+            <p className="text-xs font-mono text-slate-400 mt-1">
+              IMEI/Serial: <span className="text-slate-300">{order.imeiOrSerial}</span>
+            </p>
+          )}
         </div>
 
-        {/* Section 11: Mark as Delivered Button (Prominent when Ready or non-delivered) */}
-        {order.status !== 'Delivered' && order.status !== 'Cancelled' && (
-          <div className="mt-4">
-            <button
-              onClick={handleMarkDelivered}
-              disabled={loading}
-              className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-sm sm:text-base flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/25 transition transform active:scale-98 disabled:opacity-50"
-            >
-              <CheckCircle2 className="w-5 h-5 stroke-[2.5]" />
-              <span>Mark as Delivered ✓</span>
-            </button>
-          </div>
-        )}
-
-        {/* Status Dropdown / Changer */}
-        <div className="mt-4 p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-slate-400">Update Predefined Status:</span>
-            <span className="text-[11px] text-slate-500">Current: {order.status}</span>
-          </div>
-
-          <div className="flex flex-wrap gap-1.5">
-            {STATUS_LIST.map((st) => (
-              <button
-                key={st}
-                disabled={loading || order.status === st}
-                onClick={() => handleUpdateStatus(st)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition ${
-                  order.status === st
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-700'
-                }`}
-              >
-                {st}
-              </button>
-            ))}
-          </div>
+        {/* 3. Problem Section */}
+        <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800">
+          <span className="text-[10px] uppercase font-bold text-rose-400 tracking-wider">Problem / Complaint</span>
+          <p className="text-xs sm:text-sm text-slate-200 mt-1 font-medium">{order.complaint}</p>
         </div>
 
-        {/* Section 15 & 16: Parts Used & Critical Stock Rule */}
-        <div className="mt-4 p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
+        {/* 4. Extra Parts Section */}
+        <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2.5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
               <Package className="w-4 h-4 text-blue-400" />
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-300">
-                Parts Installed / Used
-              </h4>
+              <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">Extra Parts</span>
             </div>
 
             <button
               onClick={() => setShowAddPart(!showAddPart)}
-              className="text-xs font-semibold text-blue-400 hover:text-blue-300 flex items-center gap-1"
+              className="px-2.5 py-1 rounded-xl bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 border border-blue-500/30 text-xs font-bold flex items-center gap-1 transition"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>{showAddPart ? 'Cancel' : '+ Attach Part'}</span>
+              <span>{showAddPart ? 'Cancel' : '+ Add Part'}</span>
             </button>
           </div>
 
-          {/* Attach Part Form */}
+          {/* Add Part Form */}
           {showAddPart && (
-            <form onSubmit={handleAttachPart} className="mb-3 p-3 rounded-xl bg-slate-800/90 border border-slate-700 space-y-2.5 text-xs">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                <div className="sm:col-span-2">
-                  <label className="block text-slate-400 mb-1">Select Part from Inventory</label>
-                  <select
-                    value={selectedPartId}
-                    onChange={(e) => setSelectedPartId(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-white text-xs"
-                  >
-                    {stockItems.map((item) => (
-                      <option key={item.itemId} value={item.itemId}>
-                        {item.itemName} (Available: {item.availableQuantity}) - ₹{item.sellingPrice}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+            <form onSubmit={handleAttachPart} className="p-3 rounded-xl bg-slate-800 border border-slate-700 space-y-2.5 text-xs">
+              <div>
+                <label className="block text-slate-300 mb-1 font-semibold">Select Part</label>
+                <select
+                  value={selectedPartId}
+                  onChange={(e) => setSelectedPartId(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-white text-xs"
+                >
+                  {stockItems.map((item) => (
+                    <option key={item.itemId} value={item.itemId}>
+                      {item.itemName} — ₹{item.sellingPrice} (In Stock: {item.availableQuantity})
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-                <div>
-                  <label className="block text-slate-400 mb-1">Quantity</label>
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <label className="text-slate-300 font-semibold">Quantity:</label>
                   <input
                     type="number"
                     min="1"
                     value={partQty}
                     onChange={(e) => setPartQty(Math.max(1, Number(e.target.value)))}
-                    className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-white text-xs font-mono"
+                    className="w-20 px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white text-xs font-mono"
                   />
                 </div>
-              </div>
 
-              <div className="flex justify-end">
                 <button
                   type="submit"
                   disabled={loading || stockItems.length === 0}
-                  className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition"
+                  className="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition"
                 >
-                  Attach Part to Order
+                  Add Part
                 </button>
               </div>
             </form>
@@ -482,95 +353,76 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
 
           {/* Parts List */}
           {(!order.partsUsed || order.partsUsed.length === 0) ? (
-            <p className="text-xs text-slate-500 py-2">No parts attached to this repair yet.</p>
+            <p className="text-xs text-slate-500">No extra parts added.</p>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               {order.partsUsed.map((part) => (
                 <div
                   key={part.partId}
-                  className="p-3 rounded-xl bg-slate-950/70 border border-slate-800 flex items-center justify-between text-xs"
+                  className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-between text-xs"
                 >
                   <div>
-                    <span className="font-semibold text-white">{part.partName}</span>
-                    <div className="flex items-center gap-2 mt-0.5 text-slate-400">
-                      <span>Qty: {part.quantity}</span>
-                      <span>•</span>
-                      <span>₹{part.unitPrice * part.quantity}</span>
-                      <span>•</span>
-                      {part.consumed ? (
-                        <span className="text-emerald-400 font-semibold flex items-center gap-1">
-                          <CheckCircle2 className="w-3 h-3" /> Consumed from Stock
-                        </span>
-                      ) : (
-                        <span className="text-amber-400 font-semibold">
-                          Attached (Not Deducted Yet)
-                        </span>
-                      )}
-                    </div>
+                    <p className="font-semibold text-white">{part.partName}</p>
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      Qty: <span className="text-white font-mono">{part.quantity}</span> × ₹{part.unitPrice} = <strong className="text-blue-400 font-mono">₹{part.unitPrice * part.quantity}</strong>
+                    </p>
                   </div>
 
                   <div className="flex items-center gap-1.5">
-                    {/* Critical Rule 16: Part Used / Consumed button */}
                     {!part.consumed ? (
                       <button
                         onClick={() => handleConfirmPartUsed(part.partId)}
                         disabled={loading}
-                        className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-sm transition"
-                        title="Deduct from shop stock"
+                        className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-[11px] transition"
+                        title="Mark consumed from stock"
                       >
-                        Part Used / Consumed
+                        Use Part
                       </button>
                     ) : (
                       <button
                         onClick={() => handleReturnPart(part.partId)}
                         disabled={loading}
-                        className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-amber-300 border border-slate-700 text-[11px] font-semibold flex items-center gap-1 transition"
-                        title="Return part back to stock"
+                        className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-semibold flex items-center gap-1 border border-slate-700 transition"
+                        title="Return part to stock"
                       >
                         <RotateCcw className="w-3 h-3" />
-                        <span>Return Part</span>
+                        <span>Return</span>
                       </button>
                     )}
                   </div>
                 </div>
               ))}
+
+              <div className="flex justify-between items-center pt-1.5 text-xs text-slate-400 font-semibold">
+                <span>Parts Total:</span>
+                <span className="font-mono text-white font-bold">₹{partsTotal}</span>
+              </div>
             </div>
           )}
         </div>
 
-        {/* Section 10: Billing & Payments */}
-        <div className="mt-4 p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
+        {/* 5. Amount & Repair Pricing */}
+        <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
               <IndianRupee className="w-4 h-4 text-emerald-400" />
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-300">
-                Billing & Payments
-              </h4>
+              <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">Amount</span>
             </div>
 
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setShowEditBilling(!showEditBilling)}
-                className="text-xs font-semibold text-slate-400 hover:text-white"
-              >
-                {showEditBilling ? 'Close' : 'Edit Amount'}
-              </button>
-              <button
-                onClick={() => setShowAddPayment(!showAddPayment)}
-                className="px-2.5 py-1 rounded-lg bg-emerald-600/30 text-emerald-300 hover:bg-emerald-600/40 border border-emerald-500/40 text-xs font-semibold flex items-center gap-1"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Add Payment</span>
-              </button>
-            </div>
+            <button
+              onClick={() => setShowEditBilling(!showEditBilling)}
+              className="text-xs font-semibold text-blue-400 hover:text-blue-300"
+            >
+              {showEditBilling ? 'Cancel' : 'Edit Amount'}
+            </button>
           </div>
 
-          {/* Edit Final Amount Form */}
+          {/* Edit Amount Form */}
           {showEditBilling && (
-            <form onSubmit={handleUpdateBilling} className="mb-3 p-3 rounded-xl bg-slate-800 border border-slate-700 space-y-2 text-xs">
+            <form onSubmit={handleUpdateBilling} className="p-3 rounded-xl bg-slate-800 border border-slate-700 space-y-2 text-xs">
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-slate-400 mb-1">Final Amount (₹)</label>
+                  <label className="block text-slate-300 mb-1 font-semibold">Total Amount (₹)</label>
                   <input
                     type="number"
                     min="0"
@@ -580,7 +432,7 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-400 mb-1">Discount (₹)</label>
+                  <label className="block text-slate-300 mb-1 font-semibold">Discount (₹)</label>
                   <input
                     type="number"
                     min="0"
@@ -594,59 +446,86 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-3 py-1 rounded-lg bg-blue-600 text-white font-semibold text-xs"
+                  className="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs"
                 >
-                  Save Billing
+                  Save Amount
                 </button>
               </div>
             </form>
           )}
 
+          <div className="space-y-1 text-xs text-slate-300 pt-1">
+            <div className="flex justify-between">
+              <span className="text-slate-400">Repair / Service Charge:</span>
+              <span className="font-mono">₹{serviceAmount}</span>
+            </div>
+            {partsTotal > 0 && (
+              <div className="flex justify-between">
+                <span className="text-slate-400">Parts Total:</span>
+                <span className="font-mono">₹{partsTotal}</span>
+              </div>
+            )}
+            {order.discount > 0 && (
+              <div className="flex justify-between text-emerald-400">
+                <span>Discount:</span>
+                <span className="font-mono">- ₹{order.discount}</span>
+              </div>
+            )}
+            <div className="flex justify-between font-bold text-white pt-1 border-t border-slate-800 text-sm">
+              <span>Total Bill:</span>
+              <span className="font-mono">₹{finalTotal}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* 6. Payment Section */}
+        <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">Payment</span>
+
+            <button
+              onClick={() => setShowAddPayment(!showAddPayment)}
+              className="px-2.5 py-1 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 text-xs font-bold flex items-center gap-1 transition"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>{showAddPayment ? 'Cancel' : '+ Add Payment'}</span>
+            </button>
+          </div>
+
           {/* Add Payment Form */}
           {showAddPayment && (
-            <form onSubmit={handleAddPayment} className="mb-3 p-3 rounded-xl bg-emerald-950/40 border border-emerald-500/40 space-y-2 text-xs">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <form onSubmit={handleAddPayment} className="p-3 rounded-xl bg-emerald-950/40 border border-emerald-500/30 space-y-2 text-xs">
+              <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-slate-300 mb-1">Payment Amount (₹)</label>
+                  <label className="block text-slate-300 mb-1 font-semibold">Amount (₹)</label>
                   <input
                     type="number"
                     min="1"
-                    placeholder="₹ e.g. 500"
+                    placeholder="e.g. 500"
                     value={paymentAmount}
                     onChange={(e) => setPaymentAmount(e.target.value === '' ? '' : Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-white font-mono"
+                    className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white font-mono"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-300 mb-1">Payment Mode</label>
+                  <label className="block text-slate-300 mb-1 font-semibold">Payment Mode</label>
                   <select
                     value={paymentMode}
                     onChange={(e) => setPaymentMode(e.target.value as PaymentMode)}
-                    className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-white"
+                    className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white"
                   >
                     <option value="Cash">Cash</option>
                     <option value="UPI">UPI</option>
                     <option value="Card">Card</option>
                     <option value="Bank Transfer">Bank Transfer</option>
-                    <option value="Other">Other</option>
                   </select>
-                </div>
-                <div>
-                  <label className="block text-slate-300 mb-1">Notes</label>
-                  <input
-                    type="text"
-                    placeholder="Optional note"
-                    value={paymentNotes}
-                    onChange={(e) => setPaymentNotes(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-white"
-                  />
                 </div>
               </div>
               <div className="flex justify-end">
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs"
+                  className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs"
                 >
                   Record Payment
                 </button>
@@ -654,48 +533,91 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
             </form>
           )}
 
-          {/* Summary Box */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-3 rounded-xl bg-slate-950/70 border border-slate-800 text-xs">
-            <div>
-              <span className="text-slate-500">Total Amount:</span>
-              <p className="text-sm font-bold text-white">₹{order.finalAmount || order.estimatedAmount}</p>
-            </div>
-            <div>
-              <span className="text-slate-500">Discount:</span>
-              <p className="text-sm font-bold text-slate-300">₹{order.discount || 0}</p>
-            </div>
-            <div>
-              <span className="text-slate-500">Total Paid:</span>
-              <p className="text-sm font-bold text-emerald-400">₹{order.advance}</p>
-            </div>
-            <div>
-              <span className="text-slate-500">Remaining Balance:</span>
-              <p className={`text-sm font-extrabold ${order.balance > 0 ? 'text-amber-400' : 'text-emerald-400'}`}>
-                ₹{order.balance}
-              </p>
-            </div>
+          <div className="flex justify-between items-center text-xs">
+            <span className="text-slate-400">Advance / Paid:</span>
+            <span className="font-mono text-emerald-400 font-bold text-sm">₹{order.advance}</span>
           </div>
         </div>
 
-        {/* Status History Audit Trail */}
-        {order.statusHistory && order.statusHistory.length > 0 && (
-          <div className="mt-4 p-3 rounded-xl bg-slate-900/40 border border-slate-800 text-[11px] text-slate-400">
-            <span className="font-semibold text-slate-300 block mb-1.5">Status History Audit:</span>
-            <div className="space-y-1">
-              {order.statusHistory.slice(-4).map((h) => (
-                <div key={h.id} className="flex items-center justify-between">
-                  <span>
-                    • {h.oldStatus ? `${h.oldStatus} → ` : ''}
-                    <strong className="text-blue-400">{h.newStatus}</strong> by {h.changedBy}
-                  </span>
-                  <span className="text-slate-500">
-                    {new Date(h.changedAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
-                  </span>
-                </div>
-              ))}
+        {/* 7. Remaining Balance (Large & Prominent) */}
+        <div
+          className={`p-4 rounded-2xl border flex items-center justify-between ${
+            order.balance > 0
+              ? 'bg-amber-950/30 border-amber-500/40'
+              : 'bg-emerald-950/30 border-emerald-500/40'
+          }`}
+        >
+          <div>
+            <span className="text-xs uppercase font-bold text-slate-400 block tracking-wider">Remaining Balance</span>
+            <span
+              className={`text-2xl sm:text-3xl font-extrabold font-mono mt-0.5 block ${
+                order.balance > 0 ? 'text-amber-400' : 'text-emerald-400'
+              }`}
+            >
+              ₹{order.balance}
+            </span>
+          </div>
+
+          <span
+            className={`px-3 py-1 rounded-xl text-xs font-bold border ${
+              order.balance > 0
+                ? 'bg-amber-950/80 text-amber-300 border-amber-500/40'
+                : 'bg-emerald-950/80 text-emerald-300 border-emerald-500/40'
+            }`}
+          >
+            {order.balance > 0 ? 'Payment Pending' : 'Fully Paid ✓'}
+          </span>
+        </div>
+
+        {/* 8. Repair Status Section */}
+        <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">Repair Status</span>
+            <span className="text-xs text-blue-400 font-semibold">{order.status}</span>
+          </div>
+
+          {/* Quick Mark Delivered button if Ready */}
+          {order.status !== 'Delivered' && order.status !== 'Cancelled' && (
+            <button
+              onClick={handleMarkDelivered}
+              disabled={loading}
+              className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/25 transition active:scale-98"
+            >
+              <CheckCircle2 className="w-4 h-4 stroke-[2.5]" />
+              <span>Mark as Delivered ✓</span>
+            </button>
+          )}
+
+          {/* Status Buttons */}
+          <div className="flex flex-wrap gap-1.5 pt-1">
+            {STATUS_LIST.map((st) => (
+              <button
+                key={st}
+                disabled={loading || order.status === st}
+                onClick={() => handleUpdateStatus(st)}
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition ${
+                  order.status === st
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-slate-800 text-slate-400 hover:text-white border border-slate-700/80'
+                }`}
+              >
+                {st}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 9. Expected Delivery Section */}
+        {order.expectedDelivery && (
+          <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center gap-2 text-xs">
+            <Calendar className="w-4 h-4 text-blue-400 shrink-0" />
+            <div>
+              <span className="text-slate-500">Expected Delivery:</span>
+              <p className="font-semibold text-white mt-0.5">{order.expectedDelivery}</p>
             </div>
           </div>
         )}
+
       </div>
     </div>
   );

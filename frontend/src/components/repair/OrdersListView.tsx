@@ -3,13 +3,14 @@ import {
   RepairOrder,
   RepairStatus,
 } from '../../types';
-import { Search, Phone, ExternalLink, Calendar, Wrench, IndianRupee } from 'lucide-react';
+import { Search, Phone, ExternalLink, Calendar, Wrench, IndianRupee, FileText } from 'lucide-react';
 
 interface OrdersListViewProps {
   orders: RepairOrder[];
   selectedStatus: string;
   onSelectStatus: (status: string) => void;
   onSelectOrder: (order: RepairOrder) => void;
+  onViewBill?: (order: RepairOrder) => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
 }
@@ -33,6 +34,7 @@ export const OrdersListView: React.FC<OrdersListViewProps> = ({
   selectedStatus,
   onSelectStatus,
   onSelectOrder,
+  onViewBill,
   searchQuery,
   onSearchChange,
 }) => {
@@ -186,20 +188,24 @@ export const OrdersListView: React.FC<OrdersListViewProps> = ({
                     >
                       <Phone className="w-3.5 h-3.5" />
                     </a>
-                    {order.billDriveLink && (
-                      <a
-                        href={order.billDriveLink}
-                        target="_blank"
-                        rel="noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-blue-400 text-xs font-semibold flex items-center gap-1 transition"
-                      >
-                        <ExternalLink className="w-3 h-3" />
-                        <span>Bill</span>
-                      </a>
-                    )}
-                    <span className="text-xs font-bold text-blue-400 group-hover:translate-x-0.5 transition-transform">
-                      View Details →
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (onViewBill) {
+                          onViewBill(order);
+                        } else {
+                          onSelectOrder(order);
+                        }
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 border border-blue-500/30 text-xs font-semibold flex items-center gap-1 transition active:scale-95"
+                      title="View Bill"
+                    >
+                      <FileText className="w-3 h-3" />
+                      <span>View Bill</span>
+                    </button>
+                    <span className="text-xs font-bold text-slate-400 group-hover:text-blue-400 group-hover:translate-x-0.5 transition-all">
+                      Details →
                     </span>
                   </div>
                 </div>
