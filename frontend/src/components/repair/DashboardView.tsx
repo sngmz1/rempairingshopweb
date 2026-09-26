@@ -248,14 +248,26 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         <h3 className="text-base font-bold text-white group-hover:text-blue-300 transition-colors">
                           {order.customerName}
                         </h3>
-                        <a
-                          href={`tel:${order.customerMobile}`}
-                          onClick={(e) => e.stopPropagation()}
-                          className="p-1 rounded-lg hover:bg-slate-700 text-slate-400 hover:text-emerald-400 transition"
-                          title="Call Customer"
-                        >
-                          <Phone className="w-3.5 h-3.5" />
-                        </a>
+                        <div className="flex items-center gap-1">
+                          <a
+                            href={`tel:${order.customerMobile}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="p-1 rounded-lg hover:bg-slate-700 text-slate-400 hover:text-emerald-400 transition"
+                            title="Call Customer"
+                          >
+                            <Phone className="w-3.5 h-3.5" />
+                          </a>
+                          <a
+                            href={`https://wa.me/91${order.customerMobile.replace(/\D/g, '')}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="p-1 rounded-lg hover:bg-slate-700 text-slate-400 hover:text-emerald-400 transition"
+                            title="WhatsApp Customer"
+                          >
+                            <MessageCircle className="w-3.5 h-3.5" />
+                          </a>
+                        </div>
                       </div>
                       <p className="text-xs font-semibold text-slate-300 mt-0.5">
                         {order.brand} {order.model}

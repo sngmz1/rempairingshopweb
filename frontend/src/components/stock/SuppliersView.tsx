@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Supplier } from '../../types';
 import { api } from '../../services/api';
-import { Users, X, Plus, Phone, Check, Loader2 } from 'lucide-react';
+import { Users, X, Plus, Phone, MessageCircle, Check, Loader2 } from 'lucide-react';
 
 interface SuppliersViewProps {
   isOpen: boolean;
@@ -166,13 +166,25 @@ export const SuppliersView: React.FC<SuppliersViewProps> = ({ isOpen, onClose })
                   <p className="text-slate-400 text-xs mt-0.5">{sup.notes || 'No notes'}</p>
                 </div>
 
-                <a
-                  href={`tel:${sup.mobile}`}
-                  className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-200 hover:text-emerald-400 border border-slate-700 font-mono text-xs font-semibold flex items-center gap-1.5 transition"
-                >
-                  <Phone className="w-3.5 h-3.5" />
-                  <span>{sup.mobile}</span>
-                </a>
+                <div className="flex items-center gap-1.5">
+                  <a
+                    href={`tel:${sup.mobile}`}
+                    className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-200 hover:text-emerald-400 border border-slate-700 font-mono text-xs font-semibold flex items-center gap-1.5 transition"
+                    title="Call Supplier"
+                  >
+                    <Phone className="w-3.5 h-3.5" />
+                    <span>{sup.mobile}</span>
+                  </a>
+                  <a
+                    href={`https://wa.me/91${sup.mobile.replace(/\D/g, '')}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-750 text-emerald-400 hover:text-emerald-300 border border-slate-700 transition"
+                    title="WhatsApp Supplier"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                  </a>
+                </div>
               </div>
             ))
           )}

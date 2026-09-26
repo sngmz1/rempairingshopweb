@@ -14,6 +14,7 @@ import {
   Calendar,
   Clock,
   Plus,
+  MessageCircle,
 } from 'lucide-react';
 import { api } from '../../services/api';
 
@@ -377,14 +378,27 @@ export const OnlineBillsSheetView: React.FC<OnlineBillsSheetViewProps> = ({
                     <td className="py-2.5 px-3 font-mono font-bold text-blue-400 bg-blue-950/20 underline decoration-blue-500/40">{row.orderId}</td>
                     <td className="py-2.5 px-3 font-bold text-white group-hover:text-blue-300">{row.customerName}</td>
                     <td className="py-2.5 px-3 font-mono text-slate-300">
-                      <a
-                        href={`tel:${row.customerMobile}`}
-                        onClick={(e) => e.stopPropagation()}
-                        className="hover:text-emerald-400 hover:underline flex items-center gap-1"
-                      >
-                        <Phone className="w-3 h-3 text-slate-500" />
-                        <span>{row.customerMobile}</span>
-                      </a>
+                      <div className="flex items-center gap-1.5">
+                        <a
+                          href={`tel:${row.customerMobile}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="hover:text-emerald-400 hover:underline flex items-center gap-1"
+                          title="Call Customer"
+                        >
+                          <Phone className="w-3 h-3 text-slate-500" />
+                          <span>{row.customerMobile}</span>
+                        </a>
+                        <a
+                          href={`https://wa.me/91${row.customerMobile.replace(/\D/g, '')}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="p-1 rounded hover:bg-slate-700/80 text-emerald-400 hover:text-emerald-300 transition"
+                          title="WhatsApp Customer"
+                        >
+                          <MessageCircle className="w-3.5 h-3.5" />
+                        </a>
+                      </div>
                     </td>
                     <td className="py-2.5 px-3 font-semibold text-slate-200">{row.device}</td>
                     <td className="py-2.5 px-3 text-slate-400 max-w-xs truncate" title={row.complaint}>

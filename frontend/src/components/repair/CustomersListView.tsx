@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Customer, RepairOrder } from '../../types';
-import { Search, User, Phone, Wrench, Calendar, ChevronRight, X } from 'lucide-react';
+import { Search, User, Phone, MessageCircle, Wrench, Calendar, ChevronRight, X } from 'lucide-react';
 import { api } from '../../services/api';
 
 interface CustomersListViewProps {
@@ -74,13 +74,24 @@ export const CustomersListView: React.FC<CustomersListViewProps> = ({
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2">
               <a
                 href={`tel:${cust.mobile}`}
                 onClick={(e) => e.stopPropagation()}
                 className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-emerald-400 transition"
+                title="Call Customer"
               >
                 <Phone className="w-4 h-4" />
+              </a>
+              <a
+                href={`https://wa.me/91${cust.mobile.replace(/\D/g, '')}`}
+                target="_blank"
+                rel="noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-emerald-400 transition"
+                title="WhatsApp Customer"
+              >
+                <MessageCircle className="w-4 h-4" />
               </a>
               <ChevronRight className="w-4 h-4 text-slate-500 group-hover:translate-x-0.5 transition-transform" />
             </div>
@@ -103,7 +114,25 @@ export const CustomersListView: React.FC<CustomersListViewProps> = ({
             <div className="flex items-center justify-between pb-4 border-b border-slate-800">
               <div>
                 <h3 className="text-lg font-bold text-white">{selectedCustomer.name}</h3>
-                <p className="text-xs font-mono text-slate-400">{selectedCustomer.mobile}</p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <p className="text-xs font-mono text-slate-400">{selectedCustomer.mobile}</p>
+                  <a
+                    href={`tel:${selectedCustomer.mobile}`}
+                    className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-emerald-400 transition"
+                    title="Call Customer"
+                  >
+                    <Phone className="w-3.5 h-3.5" />
+                  </a>
+                  <a
+                    href={`https://wa.me/91${selectedCustomer.mobile.replace(/\D/g, '')}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-emerald-400 transition"
+                    title="WhatsApp Customer"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5" />
+                  </a>
+                </div>
               </div>
               <button
                 onClick={() => setSelectedCustomer(null)}

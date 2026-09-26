@@ -3,7 +3,7 @@ import {
   RepairOrder,
   RepairStatus,
 } from '../../types';
-import { Search, Phone, ExternalLink, Calendar, Wrench, IndianRupee, FileText } from 'lucide-react';
+import { Search, Phone, MessageCircle, ExternalLink, Calendar, Wrench, IndianRupee, FileText } from 'lucide-react';
 
 interface OrdersListViewProps {
   orders: RepairOrder[];
@@ -179,7 +179,7 @@ export const OrdersListView: React.FC<OrdersListViewProps> = ({
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5 sm:gap-2">
                     <a
                       href={`tel:${order.customerMobile}`}
                       onClick={(e) => e.stopPropagation()}
@@ -187,6 +187,16 @@ export const OrdersListView: React.FC<OrdersListViewProps> = ({
                       title="Call Customer"
                     >
                       <Phone className="w-3.5 h-3.5" />
+                    </a>
+                    <a
+                      href={`https://wa.me/91${order.customerMobile.replace(/\D/g, '')}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-emerald-400 transition"
+                      title="WhatsApp Customer"
+                    >
+                      <MessageCircle className="w-3.5 h-3.5" />
                     </a>
                     <button
                       type="button"
