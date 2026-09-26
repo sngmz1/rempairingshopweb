@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { OnlineBillSheetService } from '../services/onlineBills/onlineBillSheetService';
 import { db } from '../db/database';
 import { requireOwner } from '../middleware/security';
+import { createErrorResponse } from '../utils/errors';
 
 const router = Router();
 
@@ -49,10 +50,7 @@ router.post('/sync-all', requireOwner, async (req: Request, res: Response) => {
       timestamp: new Date().toISOString(),
     });
   } catch (err: any) {
-    res.status(500).json({
-      success: false,
-      message: 'Failed to sync bills online: ' + err.message,
-    });
+    res.status(500).json(createErrorResponse('SYNC', '015', 'Failed to sync bills online: ' + err.message));
   }
 });
 
@@ -64,10 +62,7 @@ router.post('/config-webhook', requireOwner, (req: Request, res: Response) => {
     if (webhookUrl && typeof webhookUrl === 'string' && webhookUrl.trim().length > 0) {
       const parsed = new URL(webhookUrl.trim());
       if (parsed.protocol !== 'https:') {
-        return res.status(400).json({
-          success: false,
-          message: 'Webhook URL must use secure HTTPS protocol',
-        });
+        return res.status(400).json(createErrorResponse('SYNC', '016', 'Webhook URL must use secure HTTPS protocol'));
       }
       validUrl = parsed.toString();
     }
@@ -80,10 +75,7 @@ router.post('/config-webhook', requireOwner, (req: Request, res: Response) => {
       message: 'Google Sheet online sync URL updated successfully.',
     });
   } catch (err: any) {
-    res.status(400).json({
-      success: false,
-      message: err.message,
-    });
+    res.status(400).json(createErrorResponse('SYNC', '017', err.message || 'Invalid webhook configuration'));
   }
 });
 

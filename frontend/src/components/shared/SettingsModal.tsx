@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Settings, Check, Loader2, Store, Phone, MapPin, QrCode } from 'lucide-react';
+import { X, Settings, Check, Loader2, Store, Phone, MapPin, QrCode, Monitor } from 'lucide-react';
 import { ShopSettings } from '../../types';
 import { api } from '../../services/api';
 
@@ -212,6 +212,21 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </button>
           </div>
         </form>
+
+        {/* Chrome Web App & Desktop Shortcut Guide */}
+        <div className="mt-5 p-4 rounded-2xl bg-gradient-to-br from-slate-800/90 to-blue-950/40 border border-blue-500/20 space-y-2">
+          <div className="flex items-center gap-2 text-blue-400 font-bold text-xs">
+            <Monitor className="w-4 h-4" />
+            <span>Install Chrome Web App & Desktop Shortcut</span>
+          </div>
+          <p className="text-[11px] text-slate-300 leading-relaxed">
+            Run Jai Mataji Repair as a standalone app with the official shop icon on your PC desktop or smartphone:
+          </p>
+          <div className="space-y-1.5 text-[11px] text-slate-400 bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+            <p><strong className="text-slate-200">• Desktop (Chrome/Edge):</strong> Click the <strong>Install</strong> icon in the address bar (computer icon) or Chrome menu (⋮) → <em>Save and share</em> → <em>Install Jai Mataji Mobile Repairing...</em></p>
+            <p><strong className="text-slate-200">• Mobile (Android Chrome):</strong> Tap (⋮) → <em>Install app</em> or <em>Add to Home screen</em>.</p>
+          </div>
+        </div>
       </div>
     </div>
   );

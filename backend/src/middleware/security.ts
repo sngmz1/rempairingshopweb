@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { verifyToken, timingSafeEqualString } from '../utils/security';
+import { createErrorResponse } from '../utils/errors';
 
 // Extend Express Request type to include authenticated user
 declare global {
@@ -149,8 +150,5 @@ export function requireOwner(req: Request, res: Response, next: NextFunction) {
     return next();
   }
 
-  return res.status(403).json({
-    success: false,
-    message: 'Access denied. Owner authorization required.',
-  });
+  return res.status(403).json(createErrorResponse('AUTH', '004', 'Access denied. Owner authorization required.'));
 }

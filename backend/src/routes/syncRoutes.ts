@@ -3,6 +3,7 @@ import { GoogleSheetsService } from '../services/googleSheets/sheetsService';
 import { GoogleDriveService } from '../services/googleDrive/driveService';
 import { db } from '../db/database';
 import { requireOwner } from '../middleware/security';
+import { createErrorResponse } from '../utils/errors';
 import fs from 'fs';
 import path from 'path';
 
@@ -43,12 +44,12 @@ router.post('/save-sheet-id', requireOwner, (req: Request, res: Response) => {
   try {
     const { sheetInput } = req.body;
     if (!sheetInput || typeof sheetInput !== 'string') {
-      return res.status(400).json({ success: false, message: 'Please provide a valid Google Sheet URL or ID' });
+      return res.status(400).json(createErrorResponse('SYNC', '001', 'Please provide a valid Google Sheet URL or ID'));
     }
 
     const cleanSheetId = extractSheetId(sheetInput);
     if (!cleanSheetId || cleanSheetId.length < 10) {
-      return res.status(400).json({ success: false, message: 'Invalid Google Sheet ID or URL' });
+      return res.status(400).json(createErrorResponse('SYNC', '002', 'Invalid Google Sheet ID or URL'));
     }
 
     // Save to settings & runtime
@@ -61,7 +62,7 @@ router.post('/save-sheet-id', requireOwner, (req: Request, res: Response) => {
       sheetId: cleanSheetId,
     });
   } catch (err: any) {
-    res.status(500).json({ success: false, message: 'Failed to save Google Sheet ID' });
+    res.status(500).json(createErrorResponse('SYNC', '003', 'Failed to save Google Sheet ID: ' + err.message));
   }
 });
 
@@ -70,21 +71,18 @@ router.post('/save-credentials', requireOwner, (req: Request, res: Response) => 
   try {
     const { credentialsJson } = req.body;
     if (!credentialsJson) {
-      return res.status(400).json({ success: false, message: 'Credentials JSON is required' });
+      return res.status(400).json(createErrorResponse('SYNC', '007', 'Credentials JSON is required'));
     }
 
     let parsed: any;
     try {
       parsed = typeof credentialsJson === 'string' ? JSON.parse(credentialsJson) : credentialsJson;
     } catch {
-      return res.status(400).json({ success: false, message: 'Invalid JSON format. Please paste valid Service Account JSON.' });
+      return res.status(400).json(createErrorResponse('SYNC', '008', 'Invalid JSON format. Please paste valid Service Account JSON.'));
     }
 
     if (!parsed.client_email || !parsed.private_key) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid Service Account JSON. Missing client_email or private_key.',
-      });
+      return res.status(400).json(createErrorResponse('SYNC', '009', 'Invalid Service Account JSON. Missing client_email or private_key.'));
     }
 
     // Write to backend/service-account.json
@@ -101,7 +99,7 @@ router.post('/save-credentials', requireOwner, (req: Request, res: Response) => 
       clientEmail: parsed.client_email,
     });
   } catch (err: any) {
-    res.status(500).json({ success: false, message: 'Failed to save credentials' });
+    res.status(500).json(createErrorResponse('SYNC', '010', 'Failed to save credentials: ' + err.message));
   }
 });
 
@@ -110,17 +108,11 @@ router.post('/sheets/push', requireOwner, async (req: Request, res: Response) =>
   try {
     const result = await GoogleSheetsService.syncToGoogleSheets();
     if (!result.success) {
-      return res.status(400).json({
-        success: false,
-        message: result.message || 'Unable to sync right now. Please check Sheet ID.',
-      });
+      return res.status(400).json(createErrorResponse('SYNC', '011', result.message || 'Unable to sync right now. Please check Sheet ID.'));
     }
     res.json({ success: true, message: result.message, timestamp: result.timestamp });
   } catch (err: any) {
-    res.status(500).json({
-      success: false,
-      message: 'Unable to sync right now. Please try again.',
-    });
+    res.status(500).json(createErrorResponse('SYNC', '012', 'Unable to sync to Google Sheets: ' + (err.message || 'network timeout')));
   }
 });
 
@@ -129,17 +121,11 @@ router.post('/sheets/pull', requireOwner, async (req: Request, res: Response) =>
   try {
     const result = await GoogleSheetsService.pullFromGoogleSheets();
     if (!result.success) {
-      return res.status(400).json({
-        success: false,
-        message: result.message || 'Unable to sync right now. Please try again.',
-      });
+      return res.status(400).json(createErrorResponse('SYNC', '013', result.message || 'Unable to sync right now. Please try again.'));
     }
     res.json({ success: true, message: result.message, timestamp: result.timestamp });
   } catch (err: any) {
-    res.status(500).json({
-      success: false,
-      message: 'Unable to sync right now. Please try again.',
-    });
+    res.status(500).json(createErrorResponse('SYNC', '014', 'Unable to import from Google Sheets: ' + (err.message || 'network timeout')));
   }
 });
 

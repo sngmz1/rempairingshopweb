@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { authRateLimiter } from '../middleware/security';
 import { generateToken, verifyToken, timingSafeEqualString } from '../utils/security';
+import { createErrorResponse } from '../utils/errors';
 
 const router = Router();
 
@@ -38,10 +39,7 @@ router.post('/verify-pin', authRateLimiter, (req: Request, res: Response) => {
           message: 'Owner authentication successful',
         });
       }
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid Owner PIN',
-      });
+      return res.status(401).json(createErrorResponse('AUTH', '002', 'Invalid Owner PIN'));
     }
 
     // Employee role check
@@ -60,13 +58,10 @@ router.post('/verify-pin', authRateLimiter, (req: Request, res: Response) => {
       });
     }
 
-    return res.status(401).json({
-      success: false,
-      message: 'Invalid PIN',
-    });
+    return res.status(401).json(createErrorResponse('AUTH', '003', 'Invalid Staff PIN'));
   } catch (err: any) {
     const errorMsg = err.errors ? err.errors[0].message : 'Invalid request payload';
-    return res.status(400).json({ success: false, message: errorMsg });
+    return res.status(400).json(createErrorResponse('AUTH', '001', errorMsg));
   }
 });
 
@@ -79,12 +74,12 @@ router.get('/session', (req: Request, res: Response) => {
   const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
 
   if (!token) {
-    return res.status(401).json({ success: false, message: 'No session token provided' });
+    return res.status(401).json(createErrorResponse('AUTH', '005', 'No session token provided'));
   }
 
   const user = verifyToken(token);
   if (!user) {
-    return res.status(401).json({ success: false, message: 'Session expired or invalid' });
+    return res.status(401).json(createErrorResponse('AUTH', '005', 'Session expired or invalid'));
   }
 
   return res.json({

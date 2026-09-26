@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { db } from '../db/database';
+import { createErrorResponse } from '../utils/errors';
 
 const router = Router();
 
@@ -29,7 +30,7 @@ router.get('/', (req: Request, res: Response) => {
 router.get('/:customerId', (req: Request, res: Response) => {
   const customer = db.getCustomerById(req.params.customerId);
   if (!customer) {
-    return res.status(404).json({ success: false, message: 'Customer not found' });
+    return res.status(404).json(createErrorResponse('CUST', '001', 'Customer not found: ' + req.params.customerId));
   }
 
   const allOrders = db.getOrders();

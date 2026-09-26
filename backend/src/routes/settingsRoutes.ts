@@ -5,6 +5,7 @@ import { GoogleSheetsService } from '../services/googleSheets/sheetsService';
 import { GoogleDriveService } from '../services/googleDrive/driveService';
 import { requireOwner } from '../middleware/security';
 import { sanitizeInput } from '../utils/security';
+import { createErrorResponse } from '../utils/errors';
 
 const router = Router();
 
@@ -60,7 +61,7 @@ router.put('/', requireOwner, (req: Request, res: Response) => {
     });
   } catch (err: any) {
     const message = err.errors ? err.errors[0].message : err.message || 'Invalid settings payload';
-    res.status(400).json({ success: false, message });
+    res.status(400).json(createErrorResponse('SETTING', '001', message));
   }
 });
 

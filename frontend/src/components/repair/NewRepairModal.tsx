@@ -59,28 +59,28 @@ export const NewRepairModal: React.FC<NewRepairModalProps> = ({
 
     const cleanMobile = customerMobile.replace(/\D/g, '');
     if (cleanMobile.length < 10) {
-      setError('Please enter a valid 10-digit mobile number');
+      setError('[REPAIR-001] Please enter a valid 10-digit mobile number');
       return;
     }
 
     if (!customerName.trim()) {
-      setError('Customer name is required');
+      setError('[REPAIR-001] Customer name is required');
       return;
     }
 
     const selectedBrand = brand === 'Other' ? customBrand.trim() : brand;
     if (!selectedBrand) {
-      setError('Device brand is required');
+      setError('[REPAIR-001] Device brand is required');
       return;
     }
 
     if (!model.trim()) {
-      setError('Device model is required');
+      setError('[REPAIR-001] Device model is required');
       return;
     }
 
     if (!complaint.trim()) {
-      setError('Customer complaint is required');
+      setError('[REPAIR-001] Customer complaint is required');
       return;
     }
 
@@ -116,7 +116,7 @@ export const NewRepairModal: React.FC<NewRepairModalProps> = ({
       onOrderCreated(newOrder);
       onClose();
     } catch (err: any) {
-      setError(err.message || 'Failed to create repair order');
+      setError(err.message || '[REPAIR-001] Failed to create repair order');
     } finally {
       setLoading(false);
     }

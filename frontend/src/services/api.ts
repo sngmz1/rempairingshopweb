@@ -84,12 +84,27 @@ async function fetchJson<T>(url: string, options?: RequestInit & { _isRetry?: bo
       }
     }
 
-    const data = await res.json();
-    if (!res.ok || !data.success) {
-      throw new Error(data.message || 'Action failed. Please try again.');
+    let data: any = null;
+    try {
+      data = await res.json();
+    } catch {
+      // Body was not JSON
     }
-    return data.data !== undefined ? data.data : data;
+
+    if (!res.ok || (data && data.success === false)) {
+      const errorMsg = data?.message || (res.status === 404 ? `[SYS-404] Resource not found: ${url}` : `[SYS-${res.status}] Request failed with HTTP status ${res.status}`);
+      const customErr = new Error(errorMsg);
+      (customErr as any).errorCode = data?.errorCode;
+      (customErr as any).section = data?.section;
+      throw customErr;
+    }
+    return data && data.data !== undefined ? data.data : data;
   } catch (err: any) {
+    if (err.name === 'TypeError' && (err.message.includes('fetch') || err.message.includes('Failed to fetch') || err.message.includes('NetworkError'))) {
+      const netError = new Error('[NET-001] Network connection failed. Please check internet connection or backend server status.');
+      console.error(`API Network Error on ${url}:`, netError.message);
+      throw netError;
+    }
     console.error(`API Error on ${url}:`, err.message);
     throw err;
   }

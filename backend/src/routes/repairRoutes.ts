@@ -3,6 +3,7 @@ import { db } from '../db/database';
 import { RepairService } from '../services/repair/repairService';
 import { createRepairSchema, updateRepairStatusSchema, addPaymentSchema, updateBillingSchema, addOrderPartSchema } from '../validation/schemas';
 import { sanitizeInput } from '../utils/security';
+import { createErrorResponse } from '../utils/errors';
 import path from 'path';
 import fs from 'fs';
 
@@ -66,7 +67,7 @@ router.get('/dashboard-stats', (req: Request, res: Response) => {
 router.get('/:orderId', (req: Request, res: Response) => {
   const order = db.getOrderById(req.params.orderId);
   if (!order) {
-    return res.status(404).json({ success: false, message: 'Order not found' });
+    return res.status(404).json(createErrorResponse('REPAIR', '006', 'Repair order not found: ' + req.params.orderId));
   }
   res.json({ success: true, data: order });
 });
@@ -88,7 +89,7 @@ router.post('/', async (req: Request, res: Response) => {
     const order = await RepairService.createRepairOrder(sanitized);
     res.status(201).json({ success: true, data: order });
   } catch (err: any) {
-    res.status(400).json({ success: false, message: err.errors ? err.errors[0].message : err.message });
+    res.status(400).json(createErrorResponse('REPAIR', '001', err.errors ? err.errors[0].message : err.message));
   }
 });
 
@@ -104,7 +105,7 @@ router.patch('/:orderId/status', async (req: Request, res: Response) => {
     );
     res.json({ success: true, data: order });
   } catch (err: any) {
-    res.status(400).json({ success: false, message: err.message });
+    res.status(400).json(createErrorResponse('REPAIR', '007', err.message));
   }
 });
 
@@ -121,7 +122,7 @@ router.post('/:orderId/parts', (req: Request, res: Response) => {
     });
     res.json({ success: true, data: order });
   } catch (err: any) {
-    res.status(400).json({ success: false, message: err.message });
+    res.status(400).json(createErrorResponse('REPAIR', '008', err.message));
   }
 });
 
@@ -136,7 +137,7 @@ router.post('/:orderId/parts/:partId/consume', (req: Request, res: Response) => 
     });
     res.json({ success: true, data: order, message: 'Part marked as consumed and deducted from stock' });
   } catch (err: any) {
-    res.status(400).json({ success: false, message: err.message });
+    res.status(400).json(createErrorResponse('REPAIR', '009', err.message));
   }
 });
 
@@ -153,7 +154,7 @@ router.post('/:orderId/parts/:partId/return', (req: Request, res: Response) => {
     });
     res.json({ success: true, data: order, message: 'Part returned back to inventory' });
   } catch (err: any) {
-    res.status(400).json({ success: false, message: err.message });
+    res.status(400).json(createErrorResponse('REPAIR', '010', err.message));
   }
 });
 
@@ -170,7 +171,7 @@ router.post('/:orderId/payments', async (req: Request, res: Response) => {
     });
     res.json({ success: true, data: order });
   } catch (err: any) {
-    res.status(400).json({ success: false, message: err.message });
+    res.status(400).json(createErrorResponse('REPAIR', '011', err.message));
   }
 });
 
@@ -186,7 +187,7 @@ router.patch('/:orderId/billing', async (req: Request, res: Response) => {
     });
     res.json({ success: true, data: order });
   } catch (err: any) {
-    res.status(400).json({ success: false, message: err.message });
+    res.status(400).json(createErrorResponse('REPAIR', '012', err.message));
   }
 });
 
@@ -195,12 +196,12 @@ router.post('/:orderId/generate-pdf', async (req: Request, res: Response) => {
   try {
     const order = db.getOrderById(req.params.orderId);
     if (!order) {
-      return res.status(404).json({ success: false, message: 'Order not found' });
+      return res.status(404).json(createErrorResponse('REPAIR', '006', 'Order not found: ' + req.params.orderId));
     }
     const result = await RepairService.generateAndSyncBillPdf(order);
     res.json({ success: true, data: result });
   } catch (err: any) {
-    res.status(500).json({ success: false, message: err.message });
+    res.status(500).json(createErrorResponse('REPAIR', '013', 'Failed to generate PDF: ' + err.message));
   }
 });
 
@@ -209,7 +210,7 @@ router.get('/:orderId/pdf', async (req: Request, res: Response) => {
   try {
     const order = db.getOrderById(req.params.orderId);
     if (!order) {
-      return res.status(404).json({ success: false, message: 'Order not found' });
+      return res.status(404).json(createErrorResponse('REPAIR', '006', 'Order not found: ' + req.params.orderId));
     }
     const result = await RepairService.generateAndSyncBillPdf(order);
     if (fs.existsSync(result.filePath)) {

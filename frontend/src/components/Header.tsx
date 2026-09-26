@@ -77,11 +77,29 @@ export const Header: React.FC<HeaderProps> = ({
 
   const handleInstallApp = async () => {
     if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const choice = await deferredPrompt.userChoice;
-      if (choice.outcome === 'accepted') {
-        setDeferredPrompt(null);
+      try {
+        deferredPrompt.prompt();
+        const choice = await deferredPrompt.userChoice;
+        if (choice.outcome === 'accepted') {
+          setDeferredPrompt(null);
+        }
+      } catch (err) {
+        console.warn('Install prompt error:', err);
       }
+    } else {
+      alert(
+        "📱 Install Jai Mataji Repair as Chrome Web App & Desktop Shortcut:\n\n" +
+        "• Google Chrome on Computer (Windows/Mac):\n" +
+        "  1. Look at the right side of the address bar for the 'Install' icon (computer monitor with download arrow) and click it.\n" +
+        "  2. Or click the 3 vertical dots (⋮) in the top-right -> 'Save and share' -> 'Install Jai Mataji Mobile Repairing...'\n" +
+        "  3. Click 'Install' — Chrome will immediately create a desktop shortcut with the official shop icon and launch it in app mode!\n\n" +
+        "• Chrome on Android Phone / Tablet:\n" +
+        "  1. Tap the 3 dots (⋮) menu in Chrome\n" +
+        "  2. Tap 'Install app' or 'Add to Home screen'\n\n" +
+        "• Safari on iPhone / iPad:\n" +
+        "  1. Tap the Share button at bottom\n" +
+        "  2. Tap 'Add to Home Screen'"
+      );
     }
   };
 
@@ -133,12 +151,14 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="hidden md:inline">Search</span>
             </button>
 
-            {/* Install Web App Button (PWA prompt) */}
-            {deferredPrompt && !isStandalone && (
+            {/* Install Web App & Desktop Shortcut Button */}
+            {!isStandalone && (
               <button
                 onClick={handleInstallApp}
-                className="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white border border-blue-400/50 shadow-md shadow-blue-500/20 text-[11px] sm:text-xs font-bold flex items-center gap-1 transition active:scale-95 animate-pulse"
-                title="Install Jai Mataji Repair as an App on your phone or desktop"
+                className={`px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white border border-blue-400/50 shadow-md shadow-blue-500/20 text-[11px] sm:text-xs font-bold flex items-center gap-1 transition active:scale-95 ${
+                  deferredPrompt ? 'animate-pulse' : ''
+                }`}
+                title="Install Jai Mataji Repair as Chrome Web App & Desktop Shortcut"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Install App</span>

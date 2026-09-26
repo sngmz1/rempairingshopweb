@@ -58,7 +58,7 @@ export const StockItemModal: React.FC<StockItemModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!itemName.trim() || !brand.trim()) {
-      setError('Item Name and Brand are required');
+      setError('[STOCK-001] Item Name and Brand are required');
       return;
     }
 
@@ -88,7 +88,7 @@ export const StockItemModal: React.FC<StockItemModalProps> = ({
       onSaved();
       onClose();
     } catch (err: any) {
-      setError(err.message || 'Failed to save part');
+      setError(err.message || '[STOCK-001] Failed to save part');
     } finally {
       setLoading(false);
     }

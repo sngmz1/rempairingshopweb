@@ -5,6 +5,7 @@ import { createStockItemSchema, stockMovementSchema } from '../validation/schema
 import { StockItem, Supplier } from '../types';
 import { requireOwner } from '../middleware/security';
 import { sanitizeInput } from '../utils/security';
+import { createErrorResponse } from '../utils/errors';
 
 const router = Router();
 
@@ -77,7 +78,7 @@ router.post('/', requireOwner, (req: Request, res: Response) => {
 
     res.status(201).json({ success: true, data: newPart });
   } catch (err: any) {
-    res.status(400).json({ success: false, message: err.errors ? err.errors[0].message : err.message });
+    res.status(400).json(createErrorResponse('STOCK', '001', err.errors ? err.errors[0].message : err.message));
   }
 });
 
@@ -86,7 +87,7 @@ router.put('/:itemId', requireOwner, (req: Request, res: Response) => {
   try {
     const existing = db.getPartById(req.params.itemId);
     if (!existing) {
-      return res.status(404).json({ success: false, message: 'Stock item not found' });
+      return res.status(404).json(createErrorResponse('STOCK', '002', 'Stock item not found: ' + req.params.itemId));
     }
 
     const updated: StockItem = {
@@ -106,7 +107,7 @@ router.put('/:itemId', requireOwner, (req: Request, res: Response) => {
     db.savePart(updated);
     res.json({ success: true, data: updated });
   } catch (err: any) {
-    res.status(400).json({ success: false, message: err.message });
+    res.status(400).json(createErrorResponse('STOCK', '003', err.message));
   }
 });
 
@@ -126,7 +127,7 @@ router.post('/stock-in', (req: Request, res: Response) => {
       data: result,
     });
   } catch (err: any) {
-    res.status(400).json({ success: false, message: err.message });
+    res.status(400).json(createErrorResponse('STOCK', '004', err.message));
   }
 });
 
@@ -147,7 +148,7 @@ router.post('/stock-out', (req: Request, res: Response) => {
       data: result,
     });
   } catch (err: any) {
-    res.status(400).json({ success: false, message: err.message });
+    res.status(400).json(createErrorResponse('STOCK', '005', err.message));
   }
 });
 
@@ -178,7 +179,7 @@ router.post('/suppliers', requireOwner, (req: Request, res: Response) => {
   try {
     const { name, mobile, notes } = req.body;
     if (!name || !mobile) {
-      return res.status(400).json({ success: false, message: 'Supplier name and mobile are required' });
+      return res.status(400).json(createErrorResponse('STOCK', '006', 'Supplier name and mobile are required'));
     }
 
     const supplier: Supplier = {
@@ -192,7 +193,7 @@ router.post('/suppliers', requireOwner, (req: Request, res: Response) => {
     db.saveSupplier(supplier);
     res.status(201).json({ success: true, data: supplier });
   } catch (err: any) {
-    res.status(400).json({ success: false, message: err.message });
+    res.status(400).json(createErrorResponse('STOCK', '007', err.message));
   }
 });
 
